@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseBadRequest
 from SteamedHamsFinal.models import *
-from SteamedHamsFinal import secrets
+from SteamedHamsFinal import secrets, digitalocean
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.db.models import Count
@@ -38,6 +38,10 @@ def rules(request):
     return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Rules.html")
 
 
+def ham_redirect(request, frame):
+    return redirect("/ham/" + str(frame) + "/")
+
+
 def ham(request, frame):
     return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.html")
 
@@ -63,7 +67,8 @@ def submissions(request, frame):
             "upvotes": sub.upvotes,
             "downvotes": sub.downvotes,
             "deletable": deletable,
-            "url": '/static/submissions/frame{:04d}/{}.png'.format(frame, sub_id),
+            "url": 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'.format(frame,
+                                                                                                                 sub_id),
             "date": sub.date.isoformat()
         }
 
@@ -71,6 +76,29 @@ def submissions(request, frame):
             user_vote = UserVote.objects.all().filter(user=request.user, submission=sub_id).first()
             if user_vote:
                 sub_json["vote"] = "upvoted" if user_vote.is_upvote else "downvoted"
+        subs.append(sub_json)
+    return HttpResponse(json.dumps({"submissions": subs}), content_type='application/json')
+
+
+# no user
+def cachable_submissions(request, frame):
+    subs = []
+    frame_submissions = Submission.objects.filter(frame=int(frame), deleted=False)
+    for idx, sub in enumerate(frame_submissions):
+        deletable = False
+        if request.user.is_authenticated:
+            if request.user.is_superuser or sub.author == request.user:
+                deletable = True
+        sub_id = sub.id
+        sub_json = {
+            "id": sub_id,
+            "upvotes": sub.upvotes,
+            "downvotes": sub.downvotes,
+            "deletable": deletable,
+            "url": 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'
+                .format(frame, sub_id),
+            "date": sub.date.isoformat()
+        }
         subs.append(sub_json)
     return HttpResponse(json.dumps({"submissions": subs}), content_type='application/json')
 
@@ -89,10 +117,10 @@ def get_client_ip(request):
 
 
 def handlesignup(request):
-    if request.method == 'POST': # If the user has submitted their form
+    if request.method == 'POST':  # If the user has submitted their form
         filled_fields = request.POST.keys()
         user = None
-        if 'password' in filled_fields: # A quick check of whether you use sign-up or sign-in
+        if 'password' in filled_fields:  # A quick check of whether you use sign-up or sign-in
             username = request.POST['username']
             raw_password = request.POST['password']
             user = authenticate(username=username, password=raw_password)
@@ -104,9 +132,9 @@ def handlesignup(request):
             if validate(raw_password) and 'g-recaptcha-response' in filled_fields:
                 captcha = requests.post("https://www.google.com/recaptcha/api/siteverify",
                                         data={
-                                              'secret': secrets.captcha_secret,
-                                              'response': request.POST['g-recaptcha-response'],
-                                              'remoteip': get_client_ip(request)
+                                            'secret': secrets.captcha_secret,
+                                            'response': request.POST['g-recaptcha-response'],
+                                            'remoteip': get_client_ip(request)
                                         })
                 response = captcha.json()
                 print(str(response))
@@ -204,21 +232,14 @@ def submit(request, frame):
 
     if request.FILES:
         image = request.FILES["submission"]
-        sub = Submission(author=request.user, frame=frame)
-        sub.save()
-        os.makedirs('./static/submissions/frame{:04d}'.format(frame), exist_ok=True)
-        with open('./static/submissions/frame{:04d}/{}.png'.format(frame, sub.id), 'wb+') as destination:
-            for chunk in image.chunks():
-                destination.write(chunk)
-            destination.seek(0)
-        image = Image.open(destination.name)
-        print(image.size)
-        if image.size != (640, 480):
-            sub.delete()
-            os.remove(destination.name)
-            HttpResponse(status=400)
+        result = digitalocean.upload_sub(image, frame, request.user)
 
-    return redirect("/ham/"+str(frame))
+        if not result[0]:
+            return HttpResponse(result[1], status=400)
+    else:
+        return HttpResponse("No file found", status=400)
+
+    return redirect("/ham/" + str(frame))
 
 
 def report(request, frame):
@@ -265,14 +286,14 @@ def download(request):
         return HttpResponse('Error: must be superuser to access this page.')
 
 
-def _serve_static(path): # Convenience function
+def _serve_static(path):  # Convenience function
     with open(path, 'rb') as f:
         response = HttpResponse(content=f)
         response['Content-Type'] = 'video/mp4'
         return response
 
 
-def rendervideo(request): # Don't just call it render! We already have a function for that
+def rendervideo(request):  # Don't just call it render! We already have a function for that
     if request.user.is_superuser:
         renderer = backend.Renderer()
         rendered = renderer.create_video()
@@ -301,7 +322,8 @@ def refresh_stats():
     global stat_cache
     disp_count = 25
 
-    top_subs = list(Submission.objects.values("frame").annotate(count=Count('frame')).order_by('-count')[:disp_count])
+    top_subs = list(Submission.objects.filter(deleted=False).values("frame").annotate(count=Count('frame'))
+                    .order_by('-count')[:disp_count])
 
     represented = []
     for sub in top_subs:
@@ -334,7 +356,6 @@ def refresh_stats():
 
 
 def stats(request):
-
     if datetime.now() > stat_exp:
         refresh_stats()
     else:
