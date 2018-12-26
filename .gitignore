@@ -9,5 +9,4 @@ static
 *.pyc
 .idea
 venv
-migrations
 secrets.py
