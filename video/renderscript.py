@@ -3,7 +3,7 @@ import subprocess
 import os
 from SteamedHamsFinal import secrets
 
-#site = "http://obviouslygrilled.com"
+# site = "http://obviouslygrilled.com"
 site = "http://localhost:8000"
 
 if not os.path.exists("images"):

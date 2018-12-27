@@ -12,3 +12,4 @@ venv
 secrets.py
 video/images
 *.mp4
+*.sqlite3
