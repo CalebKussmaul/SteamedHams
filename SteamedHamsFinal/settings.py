@@ -26,7 +26,7 @@ SECRET_KEY = secrets.django_secret
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['68.183.132.241', 'localhost', '127.0.0.1', 'eb-django-app-dev.elasticbeanstalk.com',
+ALLOWED_HOSTS = ['138.197.220.79', 'localhost', '127.0.0.1', 'eb-django-app-dev.elasticbeanstalk.com',
                  'django-env.ptjepabubu.us-east-1.elasticbeanstalk.com',
                  'obviouslygrilled.com', 'elasticbeanstalk.com']
 
