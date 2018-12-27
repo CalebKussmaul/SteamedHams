@@ -24,7 +24,7 @@ urlpatterns = [
     path('signout/', views.signout),
     path('<int:frame>/', views.ham_redirect),
     path('ham/<int:frame>/', views.ham),
-    path('ham/<int:frame>/submissions.json/', views.submissions),
+    # path('ham/<int:frame>/submissions.json/', views.submissions), # use cachable, get votes from userinfo.json
     path('ham/<int:frame>/cachable_submissions.json/', views.cachable_submissions),
     path('ham/<int:frame>/upvote/', views.upvote),
     path('ham/<int:frame>/downvote/', views.downvote),
@@ -37,5 +37,5 @@ urlpatterns = [
     path('composite/', views.composite),
     path('statistics/', views.stats),
     path('rules/', views.rules),
-    # path('favicon.ico/', views.favicon)
+    path('images.json/', views.images)
 ]

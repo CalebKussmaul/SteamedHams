@@ -5,11 +5,11 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.db.models import Count
 from django.shortcuts import render, redirect
+from ratelimit.decorators import ratelimit
 import SteamedHamsFinal.backend as backend
 import json
 import os
 from os.path import join
-from PIL import Image
 from datetime import datetime, timedelta
 import ssl
 import requests
@@ -46,13 +46,17 @@ def ham(request, frame):
     return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.html")
 
 
+@ratelimit(key='ip', rate='20/h', method="POST")
 def signup(request):
+    if getattr(request, 'limited', False):
+        return HttpResponse(status=429)
     if request.method == 'POST':
         return handlesignup(request)
     else:
         return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Signup.html")
 
 
+# deprecated
 def submissions(request, frame):
     subs = []
     frame_submissions = Submission.objects.filter(frame=int(frame), deleted=False)
@@ -85,16 +89,12 @@ def cachable_submissions(request, frame):
     subs = []
     frame_submissions = Submission.objects.filter(frame=int(frame), deleted=False)
     for idx, sub in enumerate(frame_submissions):
-        deletable = False
-        if request.user.is_authenticated:
-            if request.user.is_superuser or sub.author == request.user:
-                deletable = True
         sub_id = sub.id
         sub_json = {
             "id": sub_id,
             "upvotes": sub.upvotes,
             "downvotes": sub.downvotes,
-            "deletable": deletable,
+            "author": sub.author.id,
             "url": 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'
                 .format(frame, sub_id),
             "date": sub.date.isoformat()
@@ -149,21 +149,39 @@ def handlesignup(request):
             return HttpResponse('Need unique user with correct password')
 
 
+@ratelimit(key='ip', rate='60/h')
 def signout(request):
+    if getattr(request, 'limited', False):
+        return HttpResponse(status=429)
     logout(request)
     return redirect("/")
 
 
+@ratelimit(key='ip', rate='60/h')
 def userinfo(request):
+    if getattr(request, 'limited', False):
+        return HttpResponse(status=429)
     if request.user.is_authenticated:
-        return HttpResponse(json.dumps({"username": request.user.username}), content_type='application/json')
+        votes = {}
+        for vote in UserVote.objects.filter(user=request.user):
+            votes[str(vote.submission.id)] = {"upvote": vote.is_upvote}
+        js = {
+            "username": request.user.username,
+            "id": request.user.id,
+            "superuser": request.user.is_superuser,
+            "uservotes": votes
+            }
+        return HttpResponse(json.dumps(js), content_type='application/json')
     else:
         return HttpResponse("{}", content_type='application/json')
 
 
+@ratelimit(key='ip', rate='100/h', group="vote")
 def upvote(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
+    if getattr(request, 'limited', False):
+        return HttpResponse(status=429)
 
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
@@ -192,9 +210,12 @@ def upvote(request, frame):
     return HttpResponse(status=200)
 
 
+@ratelimit(key='ip', rate='100/h', group="vote")
 def downvote(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
+    if getattr(request, 'limited', False):
+        return HttpResponse(status=429)
 
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
@@ -223,12 +244,15 @@ def downvote(request, frame):
     return HttpResponse(status=200)
 
 
+@ratelimit(key='ip', rate='10/h')
 def submit(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
+    if getattr(request, 'limited', False):
+        return HttpResponse(status=429)
 
     if not request.user.is_authenticated:
-        return redirect(signup)
+        return HttpResponse(status=401)
 
     if request.FILES:
         image = request.FILES["submission"]
@@ -242,9 +266,12 @@ def submit(request, frame):
     return redirect("/ham/" + str(frame))
 
 
+@ratelimit(key='ip', rate='10/h')
 def report(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
+    if getattr(request, 'limited', False):
+        return HttpResponse(status=429)
     if not request.user.is_authenticated:
         return HttpResponse(status=401)
 
@@ -364,3 +391,24 @@ def stats(request):
     return render(request=request,
                   template_name='Stats.html',
                   context=stat_cache)
+
+
+def images(request):
+    if not request.user.is_superuser:
+        return HttpResponse(status=401)
+
+    js = []
+
+    for i in range(1, 1957):
+        frame_subs = Submission.objects.filter(frame=i, deleted=False).extra(
+            select={'fieldsum': 'upvotes + downvotes'},
+            order_by=('fieldsum',)
+        )
+        if frame_subs.exists():
+            js.append(
+                'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'.format(i,
+                                                                                                              frame_subs.first().id))
+        else:
+            js.append('https://steamedassets.nyc3.cdn.digitaloceanspaces.com/originals/frame{:04d}.png'.format(i))
+
+    return HttpResponse(json.dumps(js), content_type='application/json')
