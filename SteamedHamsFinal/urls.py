@@ -37,5 +37,5 @@ urlpatterns = [
     path('composite/', views.composite),
     path('statistics/', views.stats),
     path('rules/', views.rules),
-    path('images.json/', views.images)
+    path('images.json/<password>/', views.images)
 ]

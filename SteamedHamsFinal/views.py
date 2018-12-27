@@ -136,9 +136,6 @@ def handlesignup(request):
                                             'response': request.POST['g-recaptcha-response'],
                                             'remoteip': get_client_ip(request)
                                         })
-                response = captcha.json()
-                print(str(response))
-                print(response["success"])
                 if captcha.json()["success"]:
                     user = User.objects.create_user(username, email=None, password=raw_password)
 
@@ -393,8 +390,12 @@ def stats(request):
                   context=stat_cache)
 
 
-def images(request):
-    if not request.user.is_superuser:
+def images(request, password):
+    # if not request.user.is_superuser:
+    #     return HttpResponse(status=401)
+
+    # make accesible via script (ie: not loggd in)
+    if password != secrets.images_password:
         return HttpResponse(status=401)
 
     js = []

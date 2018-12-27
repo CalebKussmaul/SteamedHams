@@ -10,3 +10,5 @@ static
 .idea
 venv
 secrets.py
+video/images
+*.mp4
