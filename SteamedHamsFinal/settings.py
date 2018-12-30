@@ -65,7 +65,6 @@ CACHES = {
         'LOCATION': '127.0.0.1:11211',
         'TIMEOUT': None,
         'OPTIONS': {
-            'MAX_ENTRIES': 2000,
         }
     }
 }
