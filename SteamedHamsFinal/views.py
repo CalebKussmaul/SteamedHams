@@ -6,6 +6,10 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.shortcuts import render, redirect
 from ratelimit.decorators import ratelimit
+from django.core.cache import cache
+from django.http import HttpRequest
+from django.utils.cache import get_cache_key
+from django.views.decorators.cache import cache_page, never_cache
 import SteamedHamsFinal.backend as backend
 import json
 import os
@@ -18,12 +22,11 @@ cwd = os.getcwd()
 
 ssl._create_default_https_context = ssl._create_unverified_context
 
-stat_cache = None
-stat_exp = datetime.now()
+# stat_cache = None
+# stat_exp = datetime.now()
 
 
-# Create your views here.
-
+@cache_page(60*60*24)
 def home(request):
     return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Index.html")
 
@@ -34,18 +37,22 @@ def writepage(url):
     return response
 
 
+@cache_page(60 * 60 * 24)
 def rules(request):
     return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Rules.html")
 
 
+@cache_page(60 * 60 * 24)
 def ham_redirect(request, frame):
     return redirect("/ham/" + str(frame) + "/")
 
 
+@cache_page(60 * 60 * 24)
 def ham(request, frame):
     return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.html")
 
 
+@never_cache
 @ratelimit(key='ip', rate='20/h', method="POST")
 def signup(request):
     if getattr(request, 'limited', False):
@@ -85,6 +92,7 @@ def submissions(request, frame):
 
 
 # no user
+@cache_page(60 * 5)
 def cachable_submissions(request, frame):
     subs = []
     frame_submissions = Submission.objects.filter(frame=int(frame), deleted=False)
@@ -101,6 +109,50 @@ def cachable_submissions(request, frame):
         }
         subs.append(sub_json)
     return HttpResponse(json.dumps({"submissions": subs}), content_type='application/json')
+
+
+@cache_page(60 * 5)
+def stats(request):
+    # global stat_exp
+    # global stat_cache
+    disp_count = 25
+    print("refreshing stats")
+
+    top_subs = list(Submission.objects.filter(deleted=False).values("frame").annotate(count=Count('frame'))
+                    .order_by('-count')[:disp_count])
+
+    represented = []
+    for sub in top_subs:
+        represented.append(sub['frame'])
+
+    i = 1
+    while len(top_subs) < disp_count:
+        if i not in represented:
+            top_subs.append({'count': 0, 'frame': i})
+        i += 1
+
+    zero_subs = []
+
+    i = 1
+    while len(zero_subs) < disp_count and i < 2037:
+        if i not in represented:
+            zero_subs.append({'count': 0, 'frame': i})
+        i += 1
+
+    if len(zero_subs) < disp_count:
+        bot_subs = list(
+            Submission.objects.values("frame").annotate(count=Count('frame')).order_by('count')[:disp_count])
+        for i in range(0, len(zero_subs) - disp_count):
+            zero_subs.append(bot_subs[i])
+
+    stat_cache = {'top': top_subs,
+                  'bottom': zero_subs}
+
+    # stat_exp = datetime.now() + timedelta(minutes=10)
+
+    return render(request=request,
+                  template_name='Stats.html',
+                  context=stat_cache)
 
 
 def validate(pw):
@@ -146,6 +198,7 @@ def handlesignup(request):
             return HttpResponse('Need unique user with correct password')
 
 
+@never_cache
 @ratelimit(key='ip', rate='60/h')
 def signout(request):
     if getattr(request, 'limited', False):
@@ -154,6 +207,7 @@ def signout(request):
     return redirect("/")
 
 
+@never_cache
 @ratelimit(key='ip', rate='60/h')
 def userinfo(request):
     if getattr(request, 'limited', False):
@@ -173,6 +227,7 @@ def userinfo(request):
         return HttpResponse("{}", content_type='application/json')
 
 
+@never_cache
 @ratelimit(key='ip', rate='100/h', group="vote")
 def upvote(request, frame):
     if request.method != 'POST':
@@ -207,6 +262,7 @@ def upvote(request, frame):
     return HttpResponse(status=200)
 
 
+@never_cache
 @ratelimit(key='ip', rate='100/h', group="vote")
 def downvote(request, frame):
     if request.method != 'POST':
@@ -241,6 +297,7 @@ def downvote(request, frame):
     return HttpResponse(status=200)
 
 
+@never_cache
 @ratelimit(key='ip', rate='10/h')
 def submit(request, frame):
     if request.method != 'POST':
@@ -260,9 +317,12 @@ def submit(request, frame):
     else:
         return HttpResponse("No file found", status=400)
 
-    return redirect("/ham/" + str(frame))
+    page = "/ham/" + str(frame) + "/"
+    expire_page(page)
+    return redirect(page)
 
 
+@never_cache
 @ratelimit(key='ip', rate='10/h')
 def report(request, frame):
     if request.method != 'POST':
@@ -285,6 +345,7 @@ def report(request, frame):
     return HttpResponse(status=200)
 
 
+@never_cache
 def delete(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
@@ -299,6 +360,7 @@ def delete(request, frame):
     return HttpResponse()
 
 
+@never_cache
 def download(request):
     if request.user.is_superuser:
         downloaded = backend.Downloader().download()
@@ -317,6 +379,15 @@ def _serve_static(path):  # Convenience function
         return response
 
 
+def expire_page(path):
+    request = HttpRequest()
+    request.path = path
+    key = get_cache_key(request)
+    if cache.has_key(key):
+        cache.delete(key)
+
+
+@never_cache
 def rendervideo(request):  # Don't just call it render! We already have a function for that
     if request.user.is_superuser:
         renderer = backend.Renderer()
@@ -329,6 +400,7 @@ def rendervideo(request):  # Don't just call it render! We already have a functi
         return HttpResponse('Error: must be superuser to access this page.')
 
 
+@never_cache
 def composite(request):
     if request.user.is_superuser:
         composite = backend.CompositeVideo()
@@ -341,55 +413,7 @@ def composite(request):
         return HttpResponse('Error: must be superuser to access this page.')
 
 
-def refresh_stats():
-    global stat_exp
-    global stat_cache
-    disp_count = 25
-
-    top_subs = list(Submission.objects.filter(deleted=False).values("frame").annotate(count=Count('frame'))
-                    .order_by('-count')[:disp_count])
-
-    represented = []
-    for sub in top_subs:
-        represented.append(sub['frame'])
-
-    i = 1
-    while len(top_subs) < disp_count:
-        if i not in represented:
-            top_subs.append({'count': 0, 'frame': i})
-        i += 1
-
-    zero_subs = []
-
-    i = 1
-    while len(zero_subs) < disp_count and i < 2037:
-        if i not in represented:
-            zero_subs.append({'count': 0, 'frame': i})
-        i += 1
-
-    if len(zero_subs) < disp_count:
-        bot_subs = list(
-            Submission.objects.values("frame").annotate(count=Count('frame')).order_by('count')[:disp_count])
-        for i in range(0, len(zero_subs) - disp_count):
-            zero_subs.append(bot_subs[i])
-
-    stat_cache = {'top': top_subs,
-                  'bottom': zero_subs}
-
-    stat_exp = datetime.now() + timedelta(minutes=10)
-
-
-def stats(request):
-    if datetime.now() > stat_exp:
-        refresh_stats()
-    else:
-        print("using cached stats")
-
-    return render(request=request,
-                  template_name='Stats.html',
-                  context=stat_cache)
-
-
+@never_cache
 def images(request, password):
     # if not request.user.is_superuser:
     #     return HttpResponse(status=401)
