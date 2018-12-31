@@ -7,6 +7,7 @@ from django.db.models import Count
 from django.shortcuts import render, redirect
 from ratelimit.decorators import ratelimit
 from django.core.cache import cache
+from django.urls import reverse
 from django.http import HttpRequest
 from django.utils.cache import get_cache_key
 from django.views.decorators.cache import cache_page, never_cache
@@ -317,9 +318,8 @@ def submit(request, frame):
     else:
         return HttpResponse("No file found", status=400)
 
-    page = "/ham/" + str(frame) + "/"
-    expire_page(page)
-    return redirect(page)
+    expire_page(request.META, reverse(cachable_submissions, args=[frame]))
+    return redirect("/ham/"+str(frame)+"/")
 
 
 @never_cache
@@ -357,6 +357,7 @@ def delete(request, frame):
         sub.deleted = True
         sub.save()
 
+    expire_page(request.META, reverse(cachable_submissions, args=[frame]))
     return HttpResponse()
 
 
@@ -379,11 +380,15 @@ def _serve_static(path):  # Convenience function
         return response
 
 
-def expire_page(path):
+def expire_page(request_meta, path):
     request = HttpRequest()
+    request.META = request_meta
+    # request.META = {'SERVER_NAME': request_meta.SERVER_NAME, 'SERVER_PORT': request_meta.SERVER_PORT}
+    request.LANGUAGE_CODE = 'en-us'
     request.path = path
     key = get_cache_key(request)
-    if cache.has_key(key):
+    if key in cache:
+        print("invalidating cache entry")
         cache.delete(key)
 
 
