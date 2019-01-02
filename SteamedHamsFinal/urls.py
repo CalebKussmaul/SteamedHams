@@ -43,5 +43,5 @@ urlpatterns = [
     path('composite/', views.composite),
     path('images.json/<password>/', views.images),
     path('loaderio-a121e3b9103b84461b5f933652cff7c7/', views.loader_io),
-    path('favicon.ico', views.favicon), views.favicon)
+    path('favicon.ico', views.favicon)
 ]
