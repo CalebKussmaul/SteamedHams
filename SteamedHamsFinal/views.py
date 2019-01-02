@@ -31,7 +31,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 #     return response
 
 
-@cache_page(0)
+@cache_page(60 * 60 * 24)
 def home(request):
     return render(request, 'Index.html')
     # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Index.html")

@@ -23,7 +23,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('Signup.html', views.signup),
     path('signup/', views.signup),
-    path('Rule.html', views.rules),
+    path('Rules.html', views.rules),
     path('rules/', views.rules),
     path('<int:frame>/', views.ham_redirect),
     path('HamPage.html', views.ham),
