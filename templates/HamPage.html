@@ -44,7 +44,10 @@
     <div id="comparisonModal" class="modal">
         <div class="modal-content">
             <h1>Compare with original frame</h1>
-            <input id='transparency' type="range" min="0" max="1" step='0.01' value="0.75">
+            <div>
+                <input id='transparency' type="range" min="0" max="1" step='0.01' value="0.75">
+                <input id='subtract' type="checkbox"><label for="subtract" style="margin: 2pt">subtract</label>
+            </div>
             <div class="comparison-bg" id="comparisonBg">
                 <img alt="comparison" id='modalComparison'>
             </div>
