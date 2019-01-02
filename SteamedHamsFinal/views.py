@@ -25,22 +25,22 @@ ssl._create_default_https_context = ssl._create_unverified_context
 
 # stat_cache = None
 # stat_exp = datetime.now()
+# def writepage(url):
+#     response = HttpResponse("""<!doctype html><script src=https://code.jquery.com/jquery-3.3.1.min.js></script>
+#         <script>$.ajax({url:\"""" + url + """\",success:function(e){document.open();document.write(e);document.close()}})</script>""")
+#     return response
 
 
-@cache_page(60*60*24)
+@cache_page(0)
 def home(request):
-    return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Index.html")
-
-
-def writepage(url):
-    response = HttpResponse("""<!doctype html><script src=https://code.jquery.com/jquery-3.3.1.min.js></script>
-        <script>$.ajax({url:\"""" + url + """\",success:function(e){document.write(e);document.close()}})</script>""")
-    return response
+    return render(request, 'Index.html')
+    # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Index.html")
 
 
 @cache_page(60 * 60 * 24)
 def rules(request):
-    return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Rules.html")
+    return render(request, 'Rules.html')
+    # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Rules.html")
 
 
 @cache_page(60 * 60 * 24)
@@ -50,10 +50,11 @@ def ham_redirect(request, frame):
 
 @cache_page(60 * 60 * 24)
 def ham(request, frame):
-    return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.html")
+    return render(request, 'HamPage.html')
+    # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.html")
 
 
-@never_cache
+@cache_page(60 * 60 * 24)
 @ratelimit(key='ip', rate='20/h', method="POST")
 def signup(request):
     if getattr(request, 'limited', False):
@@ -61,7 +62,8 @@ def signup(request):
     if request.method == 'POST':
         return handlesignup(request)
     else:
-        return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Signup.html")
+        # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Signup.html")
+        return render(request, 'Signup.html')
 
 
 # deprecated
