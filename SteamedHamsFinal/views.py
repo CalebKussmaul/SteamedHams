@@ -31,6 +31,10 @@ ssl._create_default_https_context = ssl._create_unverified_context
 #     return response
 
 
+def loader_io(request):
+    return HttpResponse("loaderio-a121e3b9103b84461b5f933652cff7c7")
+
+
 @cache_page(60 * 60 * 24)
 def home(request):
     return render(request, 'Index.html')
