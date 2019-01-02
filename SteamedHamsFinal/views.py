@@ -167,7 +167,12 @@ def stats(request):
 
 
 def validate(pw):
-    return pw.isalnum()
+    try:
+        pw.decode('ascii')
+    except UnicodeDecodeError:
+        return False
+    else:
+        return True
 
 
 def get_client_ip(request):
@@ -194,7 +199,8 @@ def handlesignup(request):
                 return HttpResponse('Passwords must match')
             if validate(raw_password) and 'g-recaptcha-response' in filled_fields:
                 if User.objects.filter(username=username).exists():
-                    return redirect('/signup/?msg=Username taken (note, usernames don\'t actually matter for anything)')
+                    return redirect('/signup/?msg=Username already taken ' +
+                                    '(note, usernames don\'t actually matter for anything)')
                 captcha = requests.post("https://www.google.com/recaptcha/api/siteverify",
                                         data={
                                             'secret': secrets.captcha_secret,
@@ -205,7 +211,8 @@ def handlesignup(request):
                     user = User.objects.create_user(username, email=None, password=raw_password)
                 else:
                     return redirect('/signup/?msg=Captcha error')
-
+            else:
+                return redirect('/signup/?msg=Invalid form')
         if user is not None:  # Finally try to actually log in and redirect
             login(request, user)
             return redirect('/')
