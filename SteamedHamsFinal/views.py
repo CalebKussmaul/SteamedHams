@@ -49,7 +49,7 @@ def ham_redirect(request, frame):
 
 
 @cache_page(60 * 60 * 24)
-def ham(request, frame):
+def ham(request, frame=12):
     return render(request, 'HamPage.html')
     # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.html")
 
