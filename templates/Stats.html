@@ -35,7 +35,7 @@
 
 		{% for submission in top %}
 		<tr>
-			<td>{{ forloop.counter }}</td><td><a href="/ham/{{ submission.frame }}"> Frame {{ submission.frame }} </a></td> <td>{{ submission.count }}</td>
+			<td>{{ forloop.counter }}</td><td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span></td> <td>{{ submission.count }}</td>
 		</tr>
 		{% endfor %}
 	</table>
@@ -47,7 +47,7 @@
 		</tr>
 		{% for submission in bottom %}
 		<tr>
-			<td>{{ forloop.counter }}</td><td><a href="/ham/{{ submission.frame }}"> Frame {{ submission.frame }} </a></td> <td>{{ submission.count }}</td>
+			<td>{{ forloop.counter }}</td><td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span></td> <td>{{ submission.count }}</td>
 		</tr>
 		{% endfor %}
 	</table>
