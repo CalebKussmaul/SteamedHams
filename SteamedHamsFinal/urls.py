@@ -18,13 +18,18 @@ from django.urls import path
 from SteamedHamsFinal import views
 
 urlpatterns = [
+    path('Index.html', views.home),
     path('', views.home),
     path('admin/', admin.site.urls),
+    path('Signup.html', views.signup),
     path('signup/', views.signup),
-    path('signout/', views.signout),
+    path('Rule.html', views.rules),
+    path('rules/', views.rules),
     path('<int:frame>/', views.ham_redirect),
     path('HamPage.html', views.ham),
     path('ham/<int:frame>/', views.ham),
+    path('signout/', views.signout),
+    path('statistics/', views.stats),
     # path('ham/<int:frame>/submissions.json/', views.submissions), # use cachable, get votes from userinfo.json
     path('ham/<int:frame>/cachable_submissions.json/', views.cachable_submissions),
     path('ham/<int:frame>/upvote/', views.upvote),
@@ -36,7 +41,5 @@ urlpatterns = [
     path('download/', views.download),
     path('render/', views.rendervideo),
     path('composite/', views.composite),
-    path('statistics/', views.stats),
-    path('rules/', views.rules),
     path('images.json/<password>/', views.images)
 ]
