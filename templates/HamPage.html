@@ -9,6 +9,7 @@
     <link href="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/favicon.ico" rel="shortcut icon">
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.js"></script>
+    <script src='https://www.google.com/recaptcha/api.js'></script>
 </head>
 <body>
 <iframe id="music" class="music musicAlt"
@@ -73,6 +74,7 @@
                 <form id="submit" method="POST" enctype="multipart/form-data" action="javascript:void(0);">
                     <input id="file" name="submission" type="file" accept="image/png, image/jpeg" class="browseButton">
                     <input id="upload_btn" type="submit" value="Submit">
+                    <div class="g-recaptcha" data-sitekey="6LdNW4YUAAAAAAodt34cXOJH8Cyy0_GJw_qH2SLQ"></div>
                 </form>
                 <p class="link" id="rules2">view rules</p>
             </div>

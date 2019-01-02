@@ -251,7 +251,7 @@ def userinfo(request):
 
 
 @never_cache
-@ratelimit(key='ip', rate='100/h', group="vote")
+@ratelimit(key='user', rate='100/h', group="vote")
 def upvote(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
@@ -286,7 +286,7 @@ def upvote(request, frame):
 
 
 @never_cache
-@ratelimit(key='ip', rate='100/h', group="vote")
+@ratelimit(key='user', rate='100/h', group="vote")
 def downvote(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
@@ -321,15 +321,26 @@ def downvote(request, frame):
 
 
 @never_cache
-@ratelimit(key='ip', rate='10/h')
+@ratelimit(key='user', rate='10/h')
 def submit(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
     if getattr(request, 'limited', False):
         return HttpResponse(status=429)
 
-    if not request.user.is_authenticated:
+    if not request.POST:
         return HttpResponse(status=401)
+
+    if 'g-recaptcha-response' not in request.POST:
+        return HttpResponse(status=400)
+    captcha = requests.post("https://www.google.com/recaptcha/api/siteverify",
+                            data={
+                                'secret': secrets.captcha_upload_secret,
+                                'response': request.POST['g-recaptcha-response'],
+                                'remoteip': get_client_ip(request)
+                            })
+    if not captcha.json()["success"]:
+        return HttpResponse(status=400)
 
     if request.FILES:
         image = request.FILES["submission"]
@@ -345,7 +356,7 @@ def submit(request, frame):
 
 
 @never_cache
-@ratelimit(key='ip', rate='10/h')
+@ratelimit(key='user', rate='10/h')
 def report(request, frame):
     if request.method != 'POST':
         return HttpResponseBadRequest
