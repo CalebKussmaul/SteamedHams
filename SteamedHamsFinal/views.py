@@ -35,6 +35,10 @@ def loader_io(request):
     return HttpResponse("loaderio-a121e3b9103b84461b5f933652cff7c7")
 
 
+def favicon(request):
+    return redirect("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/favicon.ico", permanent=True)
+
+
 @cache_page(60 * 60 * 24)
 def home(request):
     return render(request, 'Index.html')
