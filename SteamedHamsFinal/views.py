@@ -187,12 +187,14 @@ def handlesignup(request):
             username = request.POST['username']
             raw_password = request.POST['password']
             user = authenticate(username=username, password=raw_password)
-        elif 'password1' in filled_fields or 'password2' in filled_fields:
-            username = request.POST['username']
+        elif 'username1' in filled_fields and 'password1' in filled_fields and 'password2' in filled_fields:
+            username = request.POST['username1']
             raw_password = request.POST['password1']
             if raw_password != request.POST['password2']:
                 return HttpResponse('Passwords must match')
             if validate(raw_password) and 'g-recaptcha-response' in filled_fields:
+                if User.objects.filter(username=username).exists():
+                    return redirect('/signup/?msg=Username taken (note, usernames don\'t actually matter for anything)')
                 captcha = requests.post("https://www.google.com/recaptcha/api/siteverify",
                                         data={
                                             'secret': secrets.captcha_secret,
@@ -201,12 +203,14 @@ def handlesignup(request):
                                         })
                 if captcha.json()["success"]:
                     user = User.objects.create_user(username, email=None, password=raw_password)
+                else:
+                    return redirect('/signup/?msg=Captcha error')
 
         if user is not None:  # Finally try to actually log in and redirect
             login(request, user)
             return redirect('/')
         else:
-            return HttpResponse('Need unique user with correct password')
+            return redirect('/signup/?msg=Error logging in')
 
 
 @never_cache

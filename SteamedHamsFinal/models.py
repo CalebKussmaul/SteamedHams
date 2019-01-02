@@ -8,9 +8,9 @@ from django.contrib.sessions.models import Session
 
 class Submission(models.Model):
     id = models.AutoField(primary_key=True)
-    frame = models.IntegerField()
+    frame = models.IntegerField(db_index=True)
     # path = 'frame{:04d}/{}.png'.format(frame, id)
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
     reports = models.IntegerField(default=0)
@@ -19,9 +19,9 @@ class Submission(models.Model):
 
 
 class UserVote(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     is_upvote = models.BooleanField()
-    submission = models.ForeignKey(Submission, on_delete=models.CASCADE)
+    submission = models.ForeignKey(Submission, on_delete=models.CASCADE, db_index=True)
     date = models.DateTimeField(auto_now_add=True)
 
 
