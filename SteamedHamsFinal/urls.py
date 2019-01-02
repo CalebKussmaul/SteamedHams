@@ -23,6 +23,7 @@ urlpatterns = [
     path('signup/', views.signup),
     path('signout/', views.signout),
     path('<int:frame>/', views.ham_redirect),
+    path('/HamPage.html', views.ham),
     path('ham/<int:frame>/', views.ham),
     # path('ham/<int:frame>/submissions.json/', views.submissions), # use cachable, get votes from userinfo.json
     path('ham/<int:frame>/cachable_submissions.json/', views.cachable_submissions),
