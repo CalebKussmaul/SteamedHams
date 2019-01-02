@@ -215,6 +215,7 @@ def signout(request):
 
 
 @never_cache
+@cache_page(0)
 @ratelimit(key='ip', rate='60/h')
 def userinfo(request):
     if getattr(request, 'limited', False):
