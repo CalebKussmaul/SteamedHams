@@ -33,7 +33,6 @@
 		<tr>
 			<th>Rank</th><th>Frame</th><th>Number of submissions</th>
 		</tr>
-
 		{% for submission in top %}
 		<tr>
 			<td>{{ forloop.counter }}</td><td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span></td> <td>{{ submission.count }}</td>
