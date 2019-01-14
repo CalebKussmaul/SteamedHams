@@ -47,7 +47,7 @@
         </tr>
     {% for sub in subs %}
         <tr>
-            <td><span class="frameLink link">{{ sub.frame }}</span></td><td>{{ sub.rank }}</td><td>{{ sub.upvotes }}</td><td>{{ sub.downvotes }}</td>
+            <td><span class="frameLink link">Frame {{ sub.frame }}</span></td><td>{{ sub.rank }}</td><td>{{ sub.upvotes }}</td><td>{{ sub.downvotes }}</td>
             <td>{{ sub.score }}</td><td><a class="link" href="{{ sub.url }}">link</a></td>
         </tr>
     {% endfor %}
