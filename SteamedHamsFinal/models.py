@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F, Sum
 from django.contrib.auth.models import User
 from django.contrib import admin
 from django.contrib.sessions.models import Session
@@ -13,9 +14,20 @@ class Submission(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, db_index=True)
     upvotes = models.IntegerField(default=0)
     downvotes = models.IntegerField(default=0)
+    score = models.IntegerField(default=0)
     reports = models.IntegerField(default=0)
     date = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
+
+    def url(self):
+        return 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'.format(self.frame,
+                                                                                                             self.id)
+
+    def rank(self):
+        for idx, sub in enumerate(Submission.objects.filter(frame=self.frame).order_by('score')):
+            if sub.id == self.id:
+                return idx + 1
+        return -1
 
 
 class UserVote(models.Model):

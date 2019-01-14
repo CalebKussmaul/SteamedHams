@@ -166,6 +166,37 @@ def stats(request):
                   context=stat_cache)
 
 
+@never_cache
+@cache_page(0)
+@ratelimit(key='ip', rate='60/h')
+def my_stuff(request):
+    if not request.user.is_authenticated:
+        return render(request=request,
+                      template_name='NoStuff.html')
+
+    my_votes = UserVote.objects.filter(user=request.user)
+    total_my_votes = my_votes.count()
+    my_upvotes = my_votes.filter(is_upvote=True).count()
+
+    subs = Submission.objects.filter(author=request.user)
+
+    sub_votes = UserVote.objects.filter(submission__in=subs)
+    total_sub_votes = my_votes.count()
+    sub_upvotes = sub_votes.filter(is_upvote=True).count()
+
+    context = {
+        'down': total_my_votes-my_upvotes,
+        'up': my_upvotes,
+        'subs': subs,
+        'sub_down': total_sub_votes-sub_upvotes,
+        'sub_up': sub_upvotes,
+    }
+
+    return render(request=request,
+                  template_name='MyStuff.html',
+                  context=context)
+
+
 def validate(pw):
     try:
         pw.decode('ascii')
@@ -270,17 +301,20 @@ def upvote(request, frame):
             if prior_vote:
                 if prior_vote.is_upvote:
                     sub.upvotes -= 1
+                    sub.score -= 1
                     sub.save()
                     prior_vote.delete()
                 else:
                     sub.upvotes += 1
                     sub.downvotes -= 1
+                    sub.score += 2
                     prior_vote.is_upvote = True
                     prior_vote.save()
                     sub.save()
             else:
                 UserVote(submission=sub, user=request.user, is_upvote=True).save()
                 sub.upvotes += 1
+                sub.score += 1
                 sub.save()
     return HttpResponse(status=200)
 
@@ -305,17 +339,20 @@ def downvote(request, frame):
             if prior_vote:
                 if not prior_vote.is_upvote:
                     sub.downvotes -= 1
+                    sub.score += 1
                     sub.save()
                     prior_vote.delete()
                 else:
                     sub.upvotes -= 1
                     sub.downvotes += 1
+                    sub.score -= 2
                     prior_vote.is_upvote = False
                     prior_vote.save()
                     sub.save()
             else:
                 UserVote(submission=sub, user=request.user, is_upvote=False).save()
                 sub.downvotes += 1
+                sub.score += 1
                 sub.save()
     return HttpResponse(status=200)
 

@@ -30,29 +30,28 @@
 <p class="underlay underlay2"></p>
 <video class="borealis" src="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/borealis.mp4" muted playsinline autoplay loop></video>
 <div id="wrap">
-<h1> Most active frames </h1>
-	<table id='top' class="submissions">
-		<tr>
-			<th>Rank</th><th>Frame</th><th>Number of submissions</th>
-		</tr>
-		{% for submission in top %}
-		<tr>
-			<td>{{ forloop.counter }}</td><td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span></td> <td>{{ submission.count }}</td>
-		</tr>
-		{% endfor %}
-	</table>
-
-<h1> Least active frames</h1>
-	<table id='bottom' class="submissions">
-		<tr>
-			<th>Rank</th><th>Frame</th><th>Number of submissions</th>
-		</tr>
-		{% for submission in bottom %}
-		<tr>
-			<td>{{ forloop.counter }}</td><td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span></td> <td>{{ submission.count }}</td>
-		</tr>
-		{% endfor %}
-	</table>
+    <h1>Logged in as {{ request.user.username }}</h1>
+    <div class="submissions">
+        <p>You have upvoted {{ up }} submissions and downvoted {{ down }} submissions.</p>
+        <p>Your {{ subs.count }} submissions have been upvoted {{ sub_up }} times and downvoted {{ sub_down }} times.</p>
+    </div>
+    <h1>Your submissions</h1>
+    <table class="submissions">
+        <tr>
+            <th>Frame</th>
+            <th>Current rank</th>
+            <th>Upvotes</th>
+            <th>Downvotes</th>
+            <th>Net score</th>
+            <th>Image</th>
+        </tr>
+    {% for sub in subs %}
+        <tr>
+            <td><span class="frameLink link">{{ sub.frame }}</span></td><td>{{ sub.rank }}</td><td>{{ sub.upvotes }}</td><td>{{ sub.downvotes }}</td>
+            <td>{{ sub.score }}</td><td><a class="link" href="{{ sub.url }}">link</a></td>
+        </tr>
+    {% endfor %}
+    </table>
     <p class="footer">Hackathon project by Caleb Kussmaul &amp; Edridge D'Souza</p>
 </div>
 </body>

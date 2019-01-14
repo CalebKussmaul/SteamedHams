@@ -28,6 +28,7 @@ urlpatterns = [
     path('<int:frame>/', views.ham_redirect),
     path('HamPage.html', views.ham),
     path('ham/<int:frame>/', views.ham),
+    path('me/', views.my_stuff),
     path('signout/', views.signout),
     path('statistics/', views.stats),
     # path('ham/<int:frame>/submissions.json/', views.submissions), # use cachable, get votes from userinfo.json
