@@ -24,7 +24,7 @@ class Submission(models.Model):
                                                                                                              self.id)
 
     def rank(self):
-        for idx, sub in enumerate(Submission.objects.filter(frame=self.frame).order_by('score')):
+        for idx, sub in enumerate(Submission.objects.filter(frame=self.frame, deleted=False).order_by('-score')):
             if sub.id == self.id:
                 return idx + 1
         return -1
