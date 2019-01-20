@@ -6,6 +6,7 @@ from django.contrib.auth.models import User
 from django.db.models import Count
 from django.shortcuts import render, redirect
 from ratelimit.decorators import ratelimit
+from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 from django.urls import reverse
 from django.http import HttpRequest
@@ -74,34 +75,6 @@ def signup(request):
         return render(request, 'Signup.html')
 
 
-# deprecated
-def submissions(request, frame):
-    subs = []
-    frame_submissions = Submission.objects.filter(frame=int(frame), deleted=False)
-    for idx, sub in enumerate(frame_submissions):
-        deletable = False
-        if request.user.is_authenticated:
-            if request.user.is_superuser or sub.author == request.user:
-                deletable = True
-        sub_id = sub.id
-        sub_json = {
-            "id": sub_id,
-            "upvotes": sub.upvotes,
-            "downvotes": sub.downvotes,
-            "deletable": deletable,
-            "url": 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'.format(frame,
-                                                                                                                 sub_id),
-            "date": sub.date.isoformat()
-        }
-
-        if request.user.is_authenticated:
-            user_vote = UserVote.objects.all().filter(user=request.user, submission=sub_id).first()
-            if user_vote:
-                sub_json["vote"] = "upvoted" if user_vote.is_upvote else "downvoted"
-        subs.append(sub_json)
-    return HttpResponse(json.dumps({"submissions": subs}), content_type='application/json')
-
-
 # no user
 @cache_page(60 * 5)
 def cachable_submissions(request, frame):
@@ -166,8 +139,8 @@ def stats(request):
                   context=stat_cache)
 
 
-@never_cache
-@cache_page(0)
+@cache_page(60 * 5)
+@vary_on_cookie
 @ratelimit(key='ip', rate='60/h')
 def my_stuff(request):
     if not request.user.is_authenticated:
@@ -198,12 +171,7 @@ def my_stuff(request):
 
 
 def validate(pw):
-    try:
-        pw.decode('ascii')
-    except UnicodeDecodeError:
-        return False
-    else:
-        return True
+    return all(ord(char) < 128 for char in pw)
 
 
 def get_client_ip(request):
@@ -260,8 +228,8 @@ def signout(request):
     return redirect("/")
 
 
-@never_cache
-@cache_page(0)
+@vary_on_cookie
+@cache_page(60 * 5)
 @ratelimit(key='ip', rate='60/h')
 def userinfo(request):
     if getattr(request, 'limited', False):
@@ -316,6 +284,7 @@ def upvote(request, frame):
                 sub.upvotes += 1
                 sub.score += 1
                 sub.save()
+        expire_page(request, "/userinfo.json/")
     return HttpResponse(status=200)
 
 
@@ -354,6 +323,7 @@ def downvote(request, frame):
                 sub.downvotes += 1
                 sub.score += 1
                 sub.save()
+        expire_page(request, "/userinfo.json/")
     return HttpResponse(status=200)
 
 
@@ -388,7 +358,7 @@ def submit(request, frame):
     else:
         return HttpResponse("No file found", status=400)
 
-    expire_page(request.META, reverse(cachable_submissions, args=[frame]))
+    expire_page(request, reverse(cachable_submissions, args=[frame]))
     return redirect("/ham/"+str(frame)+"/")
 
 
@@ -427,7 +397,7 @@ def delete(request, frame):
         sub.deleted = True
         sub.save()
 
-    expire_page(request.META, reverse(cachable_submissions, args=[frame]))
+    expire_page(request, reverse(cachable_submissions, args=[frame]))
     return HttpResponse()
 
 
@@ -450,9 +420,8 @@ def _serve_static(path):  # Convenience function
         return response
 
 
-def expire_page(request_meta, path):
-    request = HttpRequest()
-    request.META = request_meta
+def expire_page(request, path):
+    request = request
     # request.META = {'SERVER_NAME': request_meta.SERVER_NAME, 'SERVER_PORT': request_meta.SERVER_PORT}
     request.LANGUAGE_CODE = 'en-us'
     request.path = path
