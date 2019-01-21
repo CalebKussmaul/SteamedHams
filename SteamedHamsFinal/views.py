@@ -123,35 +123,41 @@ def stats(request):
     disp_count = 25
     print("refreshing stats")
 
-    top_subs = list(Submission.objects.filter(deleted=False).values("frame").annotate(count=Count('frame'))
-                    .order_by('-count')[:disp_count])
+    top_frames = list(Submission.objects.filter(deleted=False).values("frame").annotate(count=Count('frame'))
+                      .order_by('-count')[:disp_count])
 
     represented = []
-    for sub in top_subs:
+    for sub in top_frames:
         represented.append(sub['frame'])
 
     i = 1
-    while len(top_subs) < disp_count:
+    while len(top_frames) < disp_count:
         if i not in represented:
-            top_subs.append({'count': 0, 'frame': i})
+            top_frames.append({'count': 0, 'frame': i})
         i += 1
 
-    zero_subs = []
+    bot_frames = []
 
     i = 1
-    while len(zero_subs) < disp_count and i < 2037:
+    while len(bot_frames) < disp_count and i < 2037:
         if i not in represented:
-            zero_subs.append({'count': 0, 'frame': i})
+            bot_frames.append({'count': 0, 'frame': i})
         i += 1
 
-    if len(zero_subs) < disp_count:
+    if len(bot_frames) < disp_count:
         bot_subs = list(
             Submission.objects.values("frame").annotate(count=Count('frame')).order_by('count')[:disp_count])
-        for i in range(0, len(zero_subs) - disp_count):
-            zero_subs.append(bot_subs[i])
+        for i in range(0, len(bot_frames) - disp_count):
+            bot_frames.append(bot_subs[i])
 
-    stat_cache = {'top': top_subs,
-                  'bottom': zero_subs}
+    recent_subs = Submission.objects.order_by('-date')[:25]
+
+    top_subs = Submission.objects.order_by('-score')[:25]
+
+    stat_cache = {'top_frames': top_frames,
+                  'bottom_frames': bot_frames,
+                  'recent_subs': recent_subs,
+                  'top_subs': top_subs}
 
     # stat_exp = datetime.now() + timedelta(minutes=10)
 

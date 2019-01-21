@@ -31,29 +31,63 @@
 <p class="underlay underlay2"></p>
 <video class="borealis" src="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/borealis.mp4" muted playsinline autoplay loop></video>
 <div id="wrap">
-<h1> Most active frames </h1>
+    <h1>Most active frames</h1>
 	<table id='top' class="submissions">
 		<tr>
 			<th>Rank</th><th>Frame</th><th>Number of submissions</th>
 		</tr>
-		{% for submission in top %}
+		{% for submission in top_frames %}
 		<tr>
 			<td>{{ forloop.counter }}</td><td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span></td> <td>{{ submission.count }}</td>
 		</tr>
 		{% endfor %}
 	</table>
-
-<h1> Least active frames</h1>
+    <h1>Least active frames</h1>
 	<table id='bottom' class="submissions">
 		<tr>
 			<th>Rank</th><th>Frame</th><th>Number of submissions</th>
 		</tr>
-		{% for submission in bottom %}
+		{% for submission in bottom_frames %}
 		<tr>
 			<td>{{ forloop.counter }}</td><td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span></td> <td>{{ submission.count }}</td>
 		</tr>
 		{% endfor %}
 	</table>
+    <h1>Recent submissions</h1>
+    <table id='bottom' class="submissions">
+        <tr>
+            <th>Number</th>
+            <th>Frame</th>
+            <th>Image</th>
+        </tr>
+        {% for submission in recent_subs %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span>
+                </td>
+                <td><a class="link" href="{{ submission.url }}">link</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+    <h1>Top submissions overall</h1>
+    <table id='bottom' class="submissions">
+        <tr>
+            <th>Number</th>
+            <th>Frame</th>
+            <th>Image</th>
+            <th>Score</th>
+        </tr>
+        {% for submission in top_subs %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td><span class="frameLink link" frameno="{{ submission.frame }}"> Frame {{ submission.frame }} </span>
+                </td>
+                <td><a class="link" href="{{ submission.url }}">link</a></td>
+                <td>{{ submission.score }}</td>
+
+            </tr>
+        {% endfor %}
+    </table>
     <p class="footer">Hackathon project by Caleb Kussmaul &amp; Edridge D'Souza</p>
 </div>
 </body>
