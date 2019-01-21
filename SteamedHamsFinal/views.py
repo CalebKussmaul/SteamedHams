@@ -94,7 +94,7 @@ def cachable_submissions(request, frame):
             "date": sub.date.isoformat()
         }
         subs.append(sub_json)
-    prev_top = Submission.objects.filter(frame=frame_no - 1, deleted=False).order_by('score').first()
+    prev_top = Submission.objects.filter(frame=frame_no - 1, deleted=False).order_by('-score').first()
     if prev_top is None:
         prev_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/originals/frame{:04d}.png'\
             .format(max(1, frame_no - 1))
@@ -102,7 +102,7 @@ def cachable_submissions(request, frame):
         prev_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'\
             .format(max(1, frame_no - 1), str(prev_top.id))
 
-    next_top = Submission.objects.filter(frame=frame_no + 1, deleted=False).order_by('score').first()
+    next_top = Submission.objects.filter(frame=frame_no + 1, deleted=False).order_by('-score').first()
     if next_top is None:
         next_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/originals/frame{:04d}.png'.format(
             min(1956, frame_no + 1))
