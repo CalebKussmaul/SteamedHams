@@ -79,7 +79,8 @@ def signup(request):
 @cache_page(60 * 5)
 def cachable_submissions(request, frame):
     subs = []
-    frame_submissions = Submission.objects.filter(frame=int(frame), deleted=False)
+    frame_no = int(frame)
+    frame_submissions = Submission.objects.filter(frame=frame_no, deleted=False)
     for idx, sub in enumerate(frame_submissions):
         sub_id = sub.id
         sub_json = {
@@ -88,11 +89,29 @@ def cachable_submissions(request, frame):
             "downvotes": sub.downvotes,
             "author": sub.author.id,
             "url": 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'
-                .format(frame, sub_id),
+                   .format(frame, sub_id),
             "date": sub.date.isoformat()
         }
         subs.append(sub_json)
-    return HttpResponse(json.dumps({"submissions": subs}), content_type='application/json')
+    prev_top = Submission.objects.filter(frame=frame_no - 1, deleted=False).order_by('score').first()
+    if prev_top is None:
+        prev_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/originals/frame{:04d}.png'\
+            .format(max(1, frame_no - 1))
+    else:
+        prev_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'\
+            .format(max(1, frame_no - 1), prev_top.id)
+    next_top = Submission.objects.filter(frame=frame_no + 1, deleted=False).order_by('score').first()
+    if next_top is None:
+        next_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/originals/frame{:04d}.png'.format(
+            min(1956, frame_no + 1))
+    else:
+        next_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png' \
+            .format(min(1956, frame_no + 1), next_top.id)
+    js = {"submissions": subs,
+          "prev-url": prev_url,
+          "next-url": next_url
+          }
+    return HttpResponse(json.dumps(js), content_type='application/json')
 
 
 @cache_page(60 * 5)
@@ -158,10 +177,10 @@ def my_stuff(request):
     sub_upvotes = sub_votes.filter(is_upvote=True).count()
 
     context = {
-        'down': total_my_votes-my_upvotes,
+        'down': total_my_votes - my_upvotes,
         'up': my_upvotes,
         'subs': subs,
-        'sub_down': total_sub_votes-sub_upvotes,
+        'sub_down': total_sub_votes - sub_upvotes,
         'sub_up': sub_upvotes,
     }
 
@@ -243,7 +262,7 @@ def userinfo(request):
             "id": request.user.id,
             "superuser": request.user.is_superuser,
             "uservotes": votes
-            }
+        }
         return HttpResponse(json.dumps(js), content_type='application/json')
     else:
         return HttpResponse("{}", content_type='application/json')
@@ -359,7 +378,7 @@ def submit(request, frame):
         return HttpResponse("No file found", status=400)
 
     expire_page(request, reverse(cachable_submissions, args=[frame]))
-    return redirect("/ham/"+str(frame)+"/")
+    return redirect("/ham/" + str(frame) + "/")
 
 
 @never_cache
@@ -421,11 +440,12 @@ def _serve_static(path):  # Convenience function
 
 
 def expire_page(request, path):
-    request = request
+    req = HttpRequest()
+    req.META = request.META
     # request.META = {'SERVER_NAME': request_meta.SERVER_NAME, 'SERVER_PORT': request_meta.SERVER_PORT}
-    request.LANGUAGE_CODE = 'en-us'
-    request.path = path
-    key = get_cache_key(request)
+    req.LANGUAGE_CODE = 'en-us'
+    req.path = path
+    key = get_cache_key(req)
     if key in cache:
         print("invalidating cache entry")
         cache.delete(key)
