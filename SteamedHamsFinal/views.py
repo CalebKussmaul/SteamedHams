@@ -87,6 +87,7 @@ def cachable_submissions(request, frame):
             "id": sub_id,
             "upvotes": sub.upvotes,
             "downvotes": sub.downvotes,
+            "score": sub.score,
             "author": sub.author.id,
             "url": 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'
                    .format(frame, sub_id),
@@ -99,14 +100,15 @@ def cachable_submissions(request, frame):
             .format(max(1, frame_no - 1))
     else:
         prev_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png'\
-            .format(max(1, frame_no - 1), prev_top.id)
+            .format(max(1, frame_no - 1), str(prev_top.id))
+
     next_top = Submission.objects.filter(frame=frame_no + 1, deleted=False).order_by('score').first()
     if next_top is None:
         next_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/originals/frame{:04d}.png'.format(
             min(1956, frame_no + 1))
     else:
         next_url = 'https://steamedassets.nyc3.cdn.digitaloceanspaces.com/submissions/frame{:04d}/{}.png' \
-            .format(min(1956, frame_no + 1), next_top.id)
+            .format(min(1956, frame_no + 1), str(next_top.id))
     js = {"submissions": subs,
           "prev-url": prev_url,
           "next-url": next_url
