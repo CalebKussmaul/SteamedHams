@@ -340,7 +340,7 @@ def downvote(request, frame):
             else:
                 UserVote(submission=sub, user=request.user, is_upvote=False).save()
                 sub.downvotes += 1
-                sub.score += 1
+                sub.score -= 1
                 sub.save()
         expire_page(request, "/userinfo.json/")
     return HttpResponse(status=200)
