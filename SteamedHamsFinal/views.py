@@ -39,16 +39,19 @@ def loader_io(request):
 def favicon(request):
     return redirect("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/favicon.ico", permanent=True)
 
+def finalize(response):
+    response["Feature-Policy"] = "autoplay *"
+    return response
 
 @cache_page(60 * 60 * 24)
 def home(request):
-    return render(request, 'Index.html')
+    return finalize(render(request, 'Index.html'))
     # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Index.html")
 
 
 @cache_page(60 * 60 * 24)
 def rules(request):
-    return render(request, 'Rules.html')
+    return finalize(render(request, 'Rules.html'))
     # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Rules.html")
 
 
@@ -59,7 +62,7 @@ def ham_redirect(request, frame):
 
 @cache_page(60 * 60 * 24)
 def ham(request, frame=12):
-    return render(request, 'HamPage.html')
+    return finalize(render(request, 'HamPage.html'))
     # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.html")
 
 
@@ -72,7 +75,7 @@ def signup(request):
         return handlesignup(request)
     else:
         # return writepage("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/Signup.html")
-        return render(request, 'Signup.html')
+        return finalize(render(request, 'Signup.html'))
 
 
 # no user
@@ -161,9 +164,9 @@ def stats(request):
 
     # stat_exp = datetime.now() + timedelta(minutes=10)
 
-    return render(request=request,
-                  template_name='Stats.html',
-                  context=stat_cache)
+    return finalize(render(request=request,
+                           template_name='Stats.html',
+                           context=stat_cache))
 
 
 @cache_page(60 * 5)
@@ -171,8 +174,8 @@ def stats(request):
 @ratelimit(key='ip', rate='60/h')
 def my_stuff(request):
     if not request.user.is_authenticated:
-        return render(request=request,
-                      template_name='NoStuff.html')
+        return finalize(render(request=request,
+                               template_name='NoStuff.html'))
 
     my_votes = UserVote.objects.filter(user=request.user)
     total_my_votes = my_votes.count()
@@ -192,9 +195,9 @@ def my_stuff(request):
         'sub_up': sub_upvotes,
     }
 
-    return render(request=request,
-                  template_name='MyStuff.html',
-                  context=context)
+    return finalize(render(request=request,
+                           template_name='MyStuff.html',
+                           context=context))
 
 
 def validate(pw):
