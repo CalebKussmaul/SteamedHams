@@ -23,10 +23,11 @@ class Submission(models.Model):
                                                                                                              self.id)
 
     def rank(self):
-        for idx, sub in enumerate(Submission.objects.filter(frame=self.frame, deleted=False).order_by('-score')):
+        frame_subs = Submission.objects.filter(frame=self.frame, deleted=False).order_by('-score')
+        for idx, sub in enumerate(frame_subs):
             if sub.id == self.id:
-                return idx + 1
-        return -1
+                return "{} of {}".format(idx + 1, frame_subs.count())
+        return "error"
 
 
 class UserVote(models.Model):
