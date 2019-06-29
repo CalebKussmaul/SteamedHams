@@ -1,0 +1,521 @@
+body {
+  background-color: black; /*rgb(246, 201, 69)*/
+  text-align: center;
+  margin: 0;
+}
+
+h1, h2, h3, h4, h5, h6, p, span, a, label, li, tr, td {
+  font-family: sans-serif;
+  text-align: center;
+  text-decoration: none;
+  margin: 10pt 40pt;
+  color: white;
+}
+
+li {
+  margin: 2pt;
+  text-align: left;
+}
+
+a, span {
+  margin: 0;
+}
+
+ul, ol {
+  display: inline-block;
+  margin: 10pt auto;
+}
+
+table {
+  width: 80%;
+  margin: 0 auto;
+  font-family: sans-serif;
+}
+
+#wrap {
+  height: 100vh;
+  padding: 0;
+  box-sizing: border-box;
+  overflow-y: scroll;
+}
+
+.underblack {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  margin: 0;
+  background-color:black;
+  width: 100vw;
+  height: 100vh;
+}
+
+.underlay {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  margin: 0;
+  opacity: .5;
+  width: 200vw;
+  height: 200vh;
+  max-height: 200vh;
+  overflow: hidden;
+  color: #22f003;
+  transform-box: fill-box;
+}
+
+.underlay2 {
+  color: #00d2ff;
+}
+
+@keyframes underlay1 {
+  0% {
+    transform: translate(-50vw, -50vh) rotate(45deg) translate(-10vw) translateZ(0);
+  }
+  100% {
+    transform: translate(-50vw, -50vh) rotate(45deg) translate(10vw) translateZ(0);
+  }
+}
+
+@keyframes underlay2 {
+  0% {
+    transform: translate(-50vw, -50vh) rotate(-45deg) translate(-10vw) translateZ(0);
+  }
+  100% {
+    transform: translate(-50vw, -50vh) rotate(-45deg) translate(10vw) translateZ(0);
+  }
+}
+
+@keyframes underlay3 {
+  0% {
+    transform: translate(-50vw, -50vh) rotate(-135deg) translateY(-10vh) translateZ(0);
+  }
+  100% {
+    transform: translate(-50vw, -50vh) rotate(-135deg) translateY(10vh) translateZ(0);
+  }
+}
+
+@keyframes underlay4 {
+  0% {
+    transform: translate(-50vw, -50vh) rotate(-45deg) translateY(-10vh);
+  }
+  100% {
+    transform: translate(-50vw, -50vh) rotate(-45deg) translateY(10vh);
+  }
+}
+
+@media screen and (orientation: landscape) {
+  .underlay {
+    animation: underlay1 60s linear infinite;
+  }
+
+  .underlay2 {
+    animation: underlay2 60s linear infinite;
+  }
+}
+
+@media screen and (orientation: portrait) {
+  .underlay {
+    animation: underlay3 60s linear infinite;
+  }
+
+  .underlay2 {
+    animation: underlay4 60s linear infinite;
+  }
+}
+
+.borealis {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  mix-blend-mode: darken;
+  object-fit: cover;
+}
+
+.separator {
+  width: 90%;
+  height: 2pt;
+  background-color: rgba(0, 0, 0, .2);
+  margin: 4pt auto 20pt auto;
+  border-radius: 3pt;
+}
+
+.hamburgerWrapper {
+  position: absolute;
+  top: 10pt;
+  left: 10pt;
+  height: 20pt;
+  z-index: 2;
+  text-align: left;
+}
+
+.hamburger {
+  height: 30pt;
+  cursor: pointer;
+}
+
+.hamburgerMenu {
+  width: 200px;
+  padding: 5pt;
+  border-radius: 3px;
+  box-shadow: 0px 0px 10pt rgba(0, 0, 0, .4);
+  background-color: #3ab6e8;
+  border: 10px solid #59c9f7;
+}
+
+.hamburgerLink {
+  font-size: 16pt;
+  text-align: left;
+  color: purple;
+  margin: 4pt 0;
+  cursor: pointer;
+}
+
+.link {
+  color: lightblue;
+  cursor: pointer;
+}
+
+.descp {
+  display: inline-block;
+  margin: 0 auto;
+  width: 500pt;
+  height: auto;
+  text-align: justify;
+}
+
+.enter {
+  font-size: 40pt;
+  font-weight: bold;
+  color: lightblue;
+  cursor: pointer;
+}
+
+.footer {
+  margin-top: 200pt;
+}
+
+#nav {
+  padding: 20pt 0;
+  margin: 20pt auto;
+  max-width: 940px;
+  background-color: #2c1d36cc;/*#f59324;*/
+  box-shadow: inset 0 1px 10pt rgba(0, 0, 0, .4);
+  border-radius: 6px;
+}
+
+#navForm {
+  border-radius: 3pt;
+  background-color: rgba(255, 255, 255, .5);
+  border: 1pt solid rgba(0, 0, 0, .15);
+  padding: 2pt;
+  width: 100pt;
+}
+
+.navButton {
+  display: inline-block;
+  width: 16pt;
+  height: 20pt;
+  vertical-align: text-bottom;
+  cursor: pointer;
+  background: url("https://steamedassets.nyc3.cdn.digitaloceanspaces.com/arrow.png") no-repeat;
+  background-size: 100%;
+
+}
+
+.back {
+  transform: scaleX(-1);
+}
+
+#frameLabel {
+  margin: 10pt;
+  display: inline;
+}
+
+.prevFrame, .nextFrame {
+  min-width: 480px;
+  width: 480px;
+  height: 360px;
+  border-radius: 3px;
+  box-shadow: 0 1px 10pt rgba(0, 0, 0, .5);
+  filter: brightness(.4);
+  margin: 15pt;
+  transition: filter 500ms;
+}
+
+.prevFrame:hover, .nextFrame:hover {
+  filter: brightness(1.0);
+}
+
+.frames {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+#frame {
+  z-index: 1;
+  margin: 4pt -80pt; /*calc(calc(100vw - 900px) / 2);*/
+  width: 640px;
+  min-width: 640px;
+  height: 480px;
+  box-shadow: 0 1px 10pt rgba(0, 0, 0, .5);
+}
+
+.framelinks {
+  margin: 0 0 30pt 0;
+}
+
+@media screen and (max-width: 656px) {
+  #frame {
+    width: 100%;
+  }
+}
+
+.sort {
+  margin: 4pt;
+}
+
+.submissions {
+  padding: 24px 0;
+  margin: 10pt auto;
+  border-radius: 6px;
+  box-shadow: inset 0 2px 10pt rgba(0, 0, 0, .4);
+  background-color: #2c1d36cc;
+  text-align: center;
+  max-width: 940px;
+  overflow: visible;
+}
+
+.submission {
+  cursor: pointer;
+  vertical-align: top;
+  margin: 4pt 8pt;
+  border-radius: 3px;
+  display: inline-block;
+  position: relative;
+  width: 268px;
+  height: 201px;
+  background-color: #62436f;
+  box-shadow: 0 2px 5pt rgba(0, 0, 0, .5);
+  text-align: left;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-bottom: 1pt solid rgba(0, 0, 0, .2);
+
+}
+
+.final-render {
+  border-radius: 5pt;
+  box-shadow: 0 2px 5pt rgba(0, 0, 0, .5);
+}
+
+.upload {
+  text-align: center !important;
+  border-top: 2pt solid rgba(246, 201, 69, .2);
+  border-left: 1pt solid rgba(246, 201, 69, .1);
+  border-right: 1pt solid rgba(246, 201, 69, .1);
+}
+
+.uploadText {
+  font-size: 120%;
+  margin: 5pt;
+}
+
+#upload-login {
+  font-size: 125%;
+  color: lightblue;
+  cursor: pointer;
+}
+
+.voteButtons {
+  background-color: rgba(255, 255, 255, .5);
+  border-radius: 3pt;
+  display: inline-block;
+  color: rgba(0, 0, 0, .8);
+  margin: 0 0 0 2pt;
+  font-size: 10pt;
+  padding: 0 2pt;
+}
+
+.voteCount {
+  font-weight: bold;
+}
+
+.voteButton {
+  display: inline-block;
+  margin: 2pt 0 0 0;
+  cursor: pointer;
+  font-size: 18pt;
+  color: rgba(0,0,0,.75);
+}
+
+.report {
+  font-weight: bold;
+  padding: 0 3pt;
+}
+
+.downvoted .downvote, .downTotal {
+  color: dodgerblue;
+}
+
+.upvoted .upvote, .upTotal {
+  color: orangered;
+}
+
+.browseButton {
+  text-align: center;
+}
+
+@keyframes rotating {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wormhole {
+  0% {
+    left: 80px;
+    transform: scale(1);
+  }
+  49% {
+    left: 80px;
+    transform: scale(0);
+  }
+  50% {
+    left: calc(100vw - 240px);
+    transform: scale(0);
+  }
+  100% {
+    left: calc(100vw - 240px);
+    transform: scale(1);
+  }
+}
+
+@keyframes wormhole2 {
+  0% {
+    left: calc(100vw - 240px);
+    transform: scale(1);
+  }
+  49% {
+    left: calc(100vw - 240px);
+    transform: scale(0);
+  }
+  50% {
+    left: 80px;
+    transform: scale(0);
+  }
+  100% {
+    left: 80px;
+    transform: scale(1);
+  }
+}
+
+.music {
+  position: absolute;
+  width: 160px;
+  height: 120px;
+  bottom: 80px;
+  box-shadow: 0 0 10pt rgba(0, 0, 0, .8);
+  animation: rotating 20s linear infinite;
+  z-index: 10;
+  border-radius: 3px;
+  border: 10px solid #7a51ff;
+}
+
+.musicPos1 {
+  left: 80px;
+  animation: rotating 20s linear infinite, wormhole2 1s ease-out;
+}
+
+.musicPos2 {
+  left: calc(100vw - 240px);
+  animation: rotating 20s linear infinite, wormhole 1s ease-out;
+}
+
+#canvas {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.invisible {
+  display: none;
+}
+
+/* https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_modal */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 50px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0, 0, 0); /* Fallback color */
+  background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+  transition: display 0.5s linear;
+}
+
+/* Modal Content */
+.modal-content {
+  background-color: #3ab6e8;
+  border: 10px solid #59c9f7;
+  border-radius: 3px;
+  margin: auto;
+  padding: 20px;
+  width: 80%;
+  overflow: auto;
+}
+
+.subtract {
+  mix-blend-mode: difference;
+}
+
+.comparison-bg {
+  margin: 0 auto;
+  width: 640px;
+  height: 480px;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.comparison {
+  width: 100%;
+  height: auto;
+}
+
+.container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  float: right;
+}
+
+.cap1 {
+  margin: 10pt auto;
+  width: 156px;
+  height: 144px;
+}
+
+.cap2 {
+  transform: scale(0.75);
+  overflow: hidden;
+}
+
+.nano {
+  width: 200px;
+  height: 200px;
+}

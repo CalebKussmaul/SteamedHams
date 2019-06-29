@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Steamed Ham</title>
+    <meta name="author" content="Caleb Kussmaul">
+    <meta name="description" content="Steamed Hams">
+    <link href="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.css" rel="stylesheet">
+    <link href="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/favicon.ico" rel="shortcut icon">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/HamPage.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+<iframe id="music" class="music musicAlt"
+        src="https://www.youtube.com/embed/videoseries?list=PL46w2Vmqa4r28ggm--AemR0bAPTCyF08h&autoplay=1&loop=1&playsinline=1&enablejsapi=1"
+        allow="autoplay; encrypted-media" frameborder="0" onload="playMusic()"></iframe>
+<div class="hamburgerWrapper">
+    <img src="https://steamedassets.nyc3.cdn.digitaloceanspaces.com/steamedhamburger.png" class="hamburger">
+    <div class="hamburgerMenu invisible">
+        <p id="home" class="hamburgerLink">Home</p>
+        <p id="in" class="hamburgerLink">Log in</p>
+        <p class="hamburgerLink" id="out"><a href="/signout">Log out</a></p>
+        <p id="stats" class="hamburgerLink">Stats</p>
+        <p id="rules" class="hamburgerLink">Rules &amp Stuff</p>
+    </div>
+</div>
+<p class="underlay"></p>
+<p class="underlay underlay2"></p>
+<div id="wrap">
+<h1>Log in or sign up</h1>
+<div class='submissions'>
+<h2>Log in</h2>
+<form method="post">
+    <label for="id_username">Username</label><br>
+    <input type="text" name="username" autofocus required id="id_username"><br>
+    <label for="id_password">Password</label><br>
+    <input type="password" name="password" required id="id_password"><br>
+    <button type="submit">Login</button>
+</form><br>
+<h2>Sign up</h2>
+<form method="post">
+    <label for="id_username">Username</label><br>
+    <input type="text" name="username" maxlength="150" autofocus required id="id_username"><br>
+    <label for="id_password1">Password (alphanumeric)</label><br>
+    <input type="password" name="password1" required id="id_password1"><br>
+    <label for="id_password2">Confirm password</label><br>
+    <input type="password" name="password2" required id="id_password2"><br>
+    <div class="g-recaptcha" data-size="compact" data-sitekey="6LcqFH8UAAAAAL-JdO9e2Zb3rWaCLW9scSGu5NIH"></div>
+    <button type="submit">Sign up</button>
+</form>
+</div>
+    <p class="footer">Hackathon project by Caleb Kussmaul & Edridge D'Souza</p>
+</div>
+</body>
+</html>

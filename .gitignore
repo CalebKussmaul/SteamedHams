@@ -5,7 +5,8 @@
 !.elasticbeanstalk/*.global.yml
 
 
-static
+original
+submissions
 *.pyc
 .idea
 venv
