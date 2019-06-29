@@ -181,7 +181,7 @@ def my_stuff(request):
     subs = Submission.objects.filter(author=request.user, deleted=False).order_by('frame')
 
     sub_votes = UserVote.objects.filter(submission__in=subs)
-    total_sub_votes = my_votes.count()
+    total_sub_votes = sub_votes.count()
     sub_upvotes = sub_votes.filter(is_upvote=True).count()
 
     context = {
